@@ -19,7 +19,7 @@
         style="@style/Base.TextAppearance.AppCompat.Headline"
         android:gravity="center"
         android:id="@+id/emptyView"
-        android:text="Network not found. Try connecting to a network and retry"
+        android:text="@string/no_content"
         android:visibility="gone"/>
 
     <com.melnykov.fab.FloatingActionButton
