@@ -84,6 +84,8 @@ public class MainFragment extends Fragment {
                     public void onItemClick(View v, int position) {
                         //TODO:
                         // do something on item click
+                        Intent i = new Intent(context,DetailActivity.class);
+                        startActivity(i);
                     }
                 }));
         //recyclerView.
