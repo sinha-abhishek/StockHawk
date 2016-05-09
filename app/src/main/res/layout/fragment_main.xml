@@ -12,6 +12,16 @@
         android:layout_height="match_parent"
         />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        style="@style/Base.TextAppearance.AppCompat.Headline"
+        android:gravity="center"
+        android:id="@+id/emptyView"
+        android:text="Network not found. Try connecting to a network and retry"
+        android:visibility="gone"/>
+
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"

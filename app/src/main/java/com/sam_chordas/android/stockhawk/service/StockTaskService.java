@@ -2,10 +2,12 @@ package com.sam_chordas.android.stockhawk.service;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.RemoteException;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -19,6 +21,8 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sam_chordas on 9/30/15.
@@ -32,6 +36,7 @@ public class StockTaskService extends GcmTaskService{
   private Context mContext;
   private StringBuilder mStoredSymbols = new StringBuilder();
   private boolean isUpdate;
+  public static String FETCH_STATUS = "fetch_status";
 
   public StockTaskService(){}
 
@@ -50,6 +55,7 @@ public class StockTaskService extends GcmTaskService{
   @Override
   public int onRunTask(TaskParams params){
     Cursor initQueryCursor;
+    ArrayList<String> errors = new ArrayList<String>();
     if (mContext == null){
       mContext = this;
     }
@@ -61,6 +67,9 @@ public class StockTaskService extends GcmTaskService{
         + "in (", "UTF-8"));
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
+      Intent i = new Intent(FETCH_STATUS);
+      i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+      LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
     if (params.getTag().equals("init") || params.getTag().equals("periodic")){
       isUpdate = true;
@@ -74,6 +83,9 @@ public class StockTaskService extends GcmTaskService{
               URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
+          Intent i = new Intent(FETCH_STATUS);
+          i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+          LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
         }
       } else if (initQueryCursor != null){
         DatabaseUtils.dumpCursor(initQueryCursor);
@@ -88,6 +100,9 @@ public class StockTaskService extends GcmTaskService{
           urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(), "UTF-8"));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
+          Intent i = new Intent(FETCH_STATUS);
+          i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+          LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         }
       }
     } else if (params.getTag().equals("add")){
@@ -98,6 +113,9 @@ public class StockTaskService extends GcmTaskService{
         urlStringBuilder.append(URLEncoder.encode("\""+stockInput+"\")", "UTF-8"));
       } catch (UnsupportedEncodingException e){
         e.printStackTrace();
+        Intent i = new Intent(FETCH_STATUS);
+        i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
       }
     }
     // finalize the URL for the API query.
@@ -122,15 +140,24 @@ public class StockTaskService extends GcmTaskService{
                 null, null);
           }
           mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
-              Utils.quoteJsonToContentVals(getResponse));
+                  Utils.quoteJsonToContentVals(getResponse, errors));
         }catch (RemoteException | OperationApplicationException e){
+          Intent i = new Intent(FETCH_STATUS);
+          i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+          LocalBroadcastManager.getInstance(this).sendBroadcast(i);
           Log.e(LOG_TAG, "Error applying batch insert", e);
         }
       } catch (IOException e){
+        Intent i = new Intent(FETCH_STATUS);
+        i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
         e.printStackTrace();
       }
     }
-
+    Intent i = new Intent(FETCH_STATUS);
+    i.putExtra("result", result);
+    i.putStringArrayListExtra("errors", errors);
+    LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     return result;
   }
 

@@ -3,8 +3,9 @@ package com.sam_chordas.android.stockhawk.mvp;
 import android.content.Context;
 import android.util.Log;
 
-import com.byjus.network.networkutils.utils.PrefsHelper;
-import com.byjus.network.networkutils.utils.Utils;
+
+import com.sam_chordas.android.stockhawk.helpers.PrefsHelper;
+import com.sam_chordas.android.stockhawk.rest.Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.Date;
@@ -71,6 +72,9 @@ public abstract class BaseModelCollection<T,E> {
     }
 
     private boolean shouldRefresh() {
+        if (isUpdating) {
+            return false;
+        }
         if (IsUpdateNeeded()) {
             return true;
         }
@@ -111,6 +115,7 @@ public abstract class BaseModelCollection<T,E> {
 
     protected void onSyncDone() {
         //updateView(View());
+        isUpdating = false;
         lastRefreshed = new Date();
         saveLastRefreshTime();
     }
