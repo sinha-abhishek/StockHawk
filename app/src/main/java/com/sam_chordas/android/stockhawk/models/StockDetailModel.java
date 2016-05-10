@@ -15,7 +15,7 @@ public class StockDetailModel {
     }
 
     @SerializedName("count")
-    public long count;
+    public int count;
 
     @SerializedName("created")
     public String created;

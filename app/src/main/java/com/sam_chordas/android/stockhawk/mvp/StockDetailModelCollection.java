@@ -26,6 +26,7 @@ import retrofit.client.Response;
  */
 public class StockDetailModelCollection extends BaseModelCollection<List<StockDailyDetailModel>,DetailActivity> {
     String symbol;
+    int count;
     public StockDetailModelCollection(Context context, String symbol) {
         super(context, false, 0, StockDetailModelCollection.class.getSimpleName());
         this.symbol = symbol;
@@ -39,6 +40,7 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
         service.GetDetails(formQuery(), new Callback<QueryResponseModel>() {
             @Override
             public void success(QueryResponseModel queryResponseModel, Response response) {
+                count = queryResponseModel.stockDetailModel.count;
                 setModels(queryResponseModel.stockDetailModel.getStockDetails());
             }
 
@@ -59,7 +61,7 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
     private Date oneYearAgo() {
         Calendar calendar = Calendar.getInstance();
         Date today = calendar.getTime();
-        calendar.add(Calendar.YEAR, -1);
+        calendar.add(Calendar.MONTH, -1);
         return calendar.getTime();
     }
 
@@ -69,13 +71,7 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
         String endDate = DateToString(Calendar.getInstance().getTime());
         StringBuilder stringBuilder = new StringBuilder();
         try {
-//            stringBuilder.append(URLEncoder.encode("select * from yahoo.finance.historicaldata where symbol = ", "UTF-8"));
-//
-//            stringBuilder.append(URLEncoder.encode("\""+symbol+"\"", "UTF-8"));
-//            stringBuilder.append(URLEncoder.encode(" and startDate=\"", "UTF-8"));
-//            stringBuilder.append(URLEncoder.encode(startDate+"\"", "UTF-8"));
-//            stringBuilder.append(URLEncoder.encode(" and endDate=\"", "UTF-8"));
-//            stringBuilder.append(URLEncoder.encode(endDate+"\"", "UTF-8"));
+
             stringBuilder.append("select * from yahoo.finance.historicaldata where symbol = ");
 
             stringBuilder.append("\""+symbol+"\"");
@@ -86,7 +82,7 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.i("StockDetailModelCollection", stringBuilder.toString());
+        Log.i("StockDetailCollection", stringBuilder.toString());
         return stringBuilder.toString();
 
     }
@@ -116,6 +112,8 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
 
     @Override
     protected void updateView(DetailActivity view) {
-
+        if (View() != null) {
+            View().CreateGraph(getModels(), count);
+        }
     }
 }
