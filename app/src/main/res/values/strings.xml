@@ -10,5 +10,7 @@
   <string name="input_hint" translatable="false">FB</string>
   <string name="input_prefill"></string>
   <string name="network_toast" translatable="true">Uh-oh! This app requires an internet connection</string>
-  <string name="no_content" translatable="true">Could not fetch Stock data</string>
+  <string name="no_content" translatable="true">Stock data not available.</string>
+  <string name="err_network" translatable="true">Stock data not available. Failed to connect to internet</string>
+  <string name="err_other" translatable="true">Stock data not available. Server error has occured</string>
 </resources>

@@ -153,10 +153,11 @@ public class MainFragment extends Fragment {
         emptyView.setVisibility(View.GONE);
     }
 
-    public void showError() {
+    public void showError(String message) {
         //fragmentCallback.showNoContent();
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.VISIBLE);
+        emptyView.setText(message);
         fragmentCallback.hideSpinner();
     }
 

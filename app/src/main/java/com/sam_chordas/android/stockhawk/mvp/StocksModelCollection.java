@@ -17,9 +17,11 @@ import android.widget.Toast;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
+import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.ui.MainFragment;
@@ -43,7 +45,11 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
             if (result != GcmNetworkManager.RESULT_SUCCESS) {
                 //show error here
                 if (View() != null) {
-                    View().showError();
+                    if(!Utils.isNetworkAvailable(_context)) {
+                        View().showError(_context.getString(R.string.err_network));
+                    } else {
+                        View().showError(_context.getString(R.string.err_other));
+                    }
                 }
             } else {
                 onSyncDone();
@@ -128,7 +134,7 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
         if (getModels() == null || getModels().getCount() == 0) {
             //ask to show error
             if (View() != null) {
-                View().showError();
+                View().showError(_context.getString(R.string.err_network));
             }
         } else {
             if (View() != null) {
@@ -166,7 +172,11 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
             if (getModels() != null && getModels().getCount() != 0) {
                 View().UpdateAdapter(getModels());
             } else {
-                View().showError();
+                if(!Utils.isNetworkAvailable(_context)) {
+                    View().showError(_context.getString(R.string.err_network));
+                } else {
+                    View().showError(_context.getString(R.string.err_other));
+                }
             }
         }
     }
@@ -183,7 +193,18 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        setModels(data);
+        if (data == null || data.getCount() == 0) {
+            if (!Utils.isNetworkAvailable(_context)) {
+                if (View() != null) {
+                    View().networkToast();
+                    View().showError(_context.getString(R.string.err_network));
+                }
+            } else if (View() != null) {
+                View().showError(_context.getString(R.string.err_other));
+            }
+        } else {
+            setModels(data);
+        }
     }
 
     @Override
