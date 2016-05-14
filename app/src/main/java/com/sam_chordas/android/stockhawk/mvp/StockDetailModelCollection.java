@@ -3,12 +3,14 @@ package com.sam_chordas.android.stockhawk.mvp;
 import android.content.Context;
 import android.util.Log;
 
+import com.sam_chordas.android.stockhawk.helpers.StockDetailHelper;
 import com.sam_chordas.android.stockhawk.models.QueryResponseModel;
 import com.sam_chordas.android.stockhawk.models.StockDailyDetailModel;
 import com.sam_chordas.android.stockhawk.models.StockDetailModel;
 import com.sam_chordas.android.stockhawk.rest.RestClient;
 import com.sam_chordas.android.stockhawk.service.RestService;
 import com.sam_chordas.android.stockhawk.ui.DetailActivity;
+import com.sam_chordas.android.stockhawk.ui.DetailFragment;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -24,7 +26,7 @@ import retrofit.client.Response;
 /**
  * Created by abhishek on 09/05/16.
  */
-public class StockDetailModelCollection extends BaseModelCollection<List<StockDailyDetailModel>,DetailActivity> {
+public class StockDetailModelCollection extends BaseModelCollection<StockDetailHelper,DetailFragment> {
     String symbol;
     int count;
     public StockDetailModelCollection(Context context, String symbol) {
@@ -41,7 +43,8 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
             @Override
             public void success(QueryResponseModel queryResponseModel, Response response) {
                 count = queryResponseModel.stockDetailModel.count;
-                setModels(queryResponseModel.stockDetailModel.getStockDetails());
+                StockDetailHelper stockDetailHelper = new StockDetailHelper(queryResponseModel.stockDetailModel.getStockDetails());
+                setModels(stockDetailHelper);
             }
 
             @Override
@@ -61,7 +64,7 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
     private Date oneYearAgo() {
         Calendar calendar = Calendar.getInstance();
         Date today = calendar.getTime();
-        calendar.add(Calendar.MONTH, -1);
+        calendar.add(Calendar.YEAR, -1);
         return calendar.getTime();
     }
 
@@ -99,7 +102,7 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
 
     @Override
     protected boolean IsUpdateNeeded() {
-        if (getModels() == null || getModels().size() == 0) {
+        if (getModels() == null ) {
             return true;
         }
         return false;
@@ -110,10 +113,20 @@ public class StockDetailModelCollection extends BaseModelCollection<List<StockDa
 
     }
 
+    public void OnSelectionChange() {
+        updateView(View());
+    }
+
     @Override
-    protected void updateView(DetailActivity view) {
-        if (View() != null) {
-            View().CreateGraph(getModels(), count);
+    protected void updateView(DetailFragment view) {
+        if (View() != null && getModels() != null) {
+            if (View().currentSelection == DetailFragment.Selection.WEEKLY)
+                View().CreateGraph(getModels().weekly, count);
+            else if (View().currentSelection == DetailFragment.Selection.MONTHLY) {
+                View().CreateGraph(getModels().monthly, count);
+            } else {
+                View().CreateGraph(getModels().yearly, count);
+            }
         }
     }
 }

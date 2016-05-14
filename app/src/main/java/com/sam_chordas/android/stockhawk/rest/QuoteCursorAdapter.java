@@ -34,6 +34,13 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     mContext = context;
   }
 
+  public String getItemAtPosition(int position) {
+    Cursor cursor = getCursor();
+    cursor.moveToPosition(position);
+    String symbol = cursor.getString(cursor.getColumnIndex("symbol"));
+    return symbol;
+  }
+
   @Override
   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
     robotoLight = Typeface.createFromAsset(mContext.getAssets(), "fonts/Roboto-Light.ttf");

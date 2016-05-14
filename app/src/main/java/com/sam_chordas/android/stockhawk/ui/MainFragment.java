@@ -42,6 +42,7 @@ import butterknife.ButterKnife;
  * Created by abhishek on 06/05/16.
  */
 public class MainFragment extends Fragment {
+    public static String SELECTED = "selected";
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
@@ -85,6 +86,8 @@ public class MainFragment extends Fragment {
                         //TODO:
                         // do something on item click
                         Intent i = new Intent(context,DetailActivity.class);
+                        String symbol = mCursorAdapter.getItemAtPosition(position);
+                        i.putExtra(SELECTED, symbol);
                         startActivity(i);
                     }
                 }));
