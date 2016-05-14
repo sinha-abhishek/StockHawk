@@ -70,6 +70,7 @@ public class MainFragment extends Fragment {
         void hideSpinner();
         void restoreActionBar();
         void showNoContent();
+        void onItemSelected(String symbol);
     }
 
     @Nullable
@@ -87,8 +88,9 @@ public class MainFragment extends Fragment {
                         // do something on item click
                         Intent i = new Intent(context,DetailActivity.class);
                         String symbol = mCursorAdapter.getItemAtPosition(position);
-                        i.putExtra(SELECTED, symbol);
-                        startActivity(i);
+                        //i.putExtra(SELECTED, symbol);
+                        //startActivity(i);
+                        fragmentCallback.onItemSelected(symbol);
                     }
                 }));
         //recyclerView.

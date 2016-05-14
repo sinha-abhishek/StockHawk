@@ -55,110 +55,30 @@ public class MyStocksActivity extends AppCompatActivity  implements MainFragment
   private Context mContext;
   private Cursor mCursor;
   boolean isConnected;
+  Bundle savedState;
+  boolean mHasTwoFragments;
 
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-//    mContext = this;
-//    ConnectivityManager cm =
-//        (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-//
-//    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-//    isConnected = activeNetwork != null &&
-//        activeNetwork.isConnectedOrConnecting();
      setContentView(R.layout.activity_my_stocks);
     spinner = (ProgressBar)findViewById(R.id.spinnerView);
-
-//    // The intent service is for executing immediate pulls from the Yahoo API
-//    // GCMTaskService can only schedule tasks, they cannot execute immediately
-//    mServiceIntent = new Intent(this, StockIntentService.class);
-//    if (savedInstanceState == null){
-//      // Run the initialize task service so that some stocks appear upon an empty database
-//      mServiceIntent.putExtra("tag", "init");
-//      if (isConnected){
-//        startService(mServiceIntent);
-//      } else{
-//        networkToast();
-//      }
-//    }
-//    RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-//    recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//    getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
-//
-//    mCursorAdapter = new QuoteCursorAdapter(this, null);
-//    recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
-//            new RecyclerViewItemClickListener.OnItemClickListener() {
-//              @Override public void onItemClick(View v, int position) {
-//                //TODO:
-//                // do something on item click
-//              }
-//            }));
-//    recyclerView.setAdapter(mCursorAdapter);
-//
-//
-//    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//    fab.attachToRecyclerView(recyclerView);
-//    fab.setOnClickListener(new View.OnClickListener() {
-//      @Override public void onClick(View v) {
-//        if (isConnected){
-//          new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
-//              .content(R.string.content_test)
-//              .inputType(InputType.TYPE_CLASS_TEXT)
-//              .input(R.string.input_hint, R.string.input_prefill, new MaterialDialog.InputCallback() {
-//                @Override public void onInput(MaterialDialog dialog, CharSequence input) {
-//                  // On FAB click, receive user input. Make sure the stock doesn't already exist
-//                  // in the DB and proceed accordingly
-//                  Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-//                      new String[] { QuoteColumns.SYMBOL }, QuoteColumns.SYMBOL + "= ?",
-//                      new String[] { input.toString() }, null);
-//                  if (c.getCount() != 0) {
-//                    Toast toast =
-//                        Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
-//                            Toast.LENGTH_LONG);
-//                    toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
-//                    toast.show();
-//                    return;
-//                  } else {
-//                    // Add the stock to DB
-//                    mServiceIntent.putExtra("tag", "add");
-//                    mServiceIntent.putExtra("symbol", input.toString());
-//                    startService(mServiceIntent);
-//                  }
-//                }
-//              })
-//              .show();
-//        } else {
-//          networkToast();
-//        }
-//
-//      }
-//    });
-//
-//    ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter);
-//    mItemTouchHelper = new ItemTouchHelper(callback);
-//    mItemTouchHelper.attachToRecyclerView(recyclerView);
-//
     mTitle = getTitle();
-//    if (isConnected){
-//      long period = 3600L;
-//      long flex = 10L;
-//      String periodicTag = "periodic";
-//
-//      // create a periodic task to pull stocks once every hour after the app has been opened. This
-//      // is so Widget data stays up to date.
-//      PeriodicTask periodicTask = new PeriodicTask.Builder()
-//          .setService(StockTaskService.class)
-//          .setPeriod(period)
-//          .setFlex(flex)
-//          .setTag(periodicTag)
-//          .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-//          .setRequiresCharging(false)
-//          .build();
-//      // Schedule task with tag "periodic." This ensure that only the stocks present in the DB
-//      // are updated.
-//      GcmNetworkManager.getInstance(this).schedule(periodicTask);
-//    }
+    savedState = savedInstanceState;
+    if (findViewById(R.id.fragment_detail) != null) {
+      mHasTwoFragments = true;
+      if (savedInstanceState == null) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_detail, new DetailFragment(),DetailActivity.DETAILFRAGMENT_TAG)
+                .commit();
+      }
+      DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DetailActivity.DETAILFRAGMENT_TAG);
+
+    } else {
+      mHasTwoFragments = false;
+    }
+
   }
 
 
@@ -185,7 +105,23 @@ public class MyStocksActivity extends AppCompatActivity  implements MainFragment
 
   }
 
-
+  @Override
+  public void onItemSelected(String symbol) {
+    if (!mHasTwoFragments) {
+      Intent i = new Intent(this, DetailActivity.class);
+      i.putExtra(MainFragment.SELECTED, symbol);
+      startActivity(i);
+      return;
+    }
+    Bundle args = new Bundle();
+    args.putString(MainFragment.SELECTED, symbol);
+    DetailFragment fragment = new DetailFragment();
+    fragment.setArguments(args);
+    getSupportFragmentManager().beginTransaction()
+            .replace(R.id.fragment_detail, fragment, DetailActivity.DETAILFRAGMENT_TAG)
+            .commit();
+    return;
+  }
 
 
   public void ShowSpinner(boolean show) {
@@ -208,26 +144,7 @@ public class MyStocksActivity extends AppCompatActivity  implements MainFragment
     ShowSpinner(false);
   }
 
-//  @Override
-//  public boolean onOptionsItemSelected(MenuItem item) {
-//    // Handle action bar item clicks here. The action bar will
-//    // automatically handle clicks on the Home/Up button, so long
-//    // as you specify a parent activity in AndroidManifest.xml.
-//    int id = item.getItemId();
-//
-//    //noinspection SimplifiableIfStatement
-//    if (id == R.id.action_settings) {
-//      return true;
-//    }
-//
-//    if (id == R.id.action_change_units){
-//      // this is for changing stock changes from percent value to dollar value
-//      Utils.showPercent = !Utils.showPercent;
-//      this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
-//    }
-//
-//    return super.onOptionsItemSelected(item);
-//  }
+
 
 
 }

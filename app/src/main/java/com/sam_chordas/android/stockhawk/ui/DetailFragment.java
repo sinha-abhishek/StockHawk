@@ -69,8 +69,13 @@ public class DetailFragment extends android.support.v4.app.Fragment {
     public void onCreate(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             Bundle args = getArguments();
-            symbol = args.getString(MainFragment.SELECTED, "YHOO");
+            if(args != null) {
+                symbol = args.getString(MainFragment.SELECTED, "YHOO");
+            } else {
+                symbol = "YHOO";
+            }
             stockDetailModelCollection = new StockDetailModelCollection(getActivity(), symbol);
+
         } else {
             symbol = savedInstanceState.getString("symbol");
             stockDetailModelCollection = ModelCollectionManager.getInstance().restoreModels(savedInstanceState);
