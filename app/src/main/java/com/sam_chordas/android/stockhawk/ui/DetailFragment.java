@@ -167,8 +167,12 @@ public class DetailFragment extends android.support.v4.app.Fragment {
         graphYearly.addData(lineset);
         graphYearly.setXAxis(true);
         graphYearly.setAxisBorderValues((int) minimum - 1, (int) maximum + 1);
-        graphYearly.setAxisLabelsSpacing(3.0f);
-        graphYearly.setXLabels(AxisController.LabelPosition.NONE);
+        graphYearly.setAxisLabelsSpacing((maximum - minimum) / 10);
+        if (currentSelection == Selection.WEEKLY) {
+            graphYearly.setXLabels(AxisController.LabelPosition.OUTSIDE);
+        } else {
+            graphYearly.setXLabels(AxisController.LabelPosition.NONE);
+        }
         stockTip.setText(labels[0]+":"+ vals[0]);
         graphYearly.setOnClickListener(new View.OnClickListener() {
             @Override
