@@ -173,7 +173,7 @@ public class DetailFragment extends android.support.v4.app.Fragment {
         } else {
             graphYearly.setXLabels(AxisController.LabelPosition.NONE);
         }
-        stockTip.setText(labels[0]+":"+ vals[0]);
+        stockTip.setText(labels[0]+" - "+ vals[0]);
         graphYearly.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,7 +185,7 @@ public class DetailFragment extends android.support.v4.app.Fragment {
             @Override
             public void onClick(int setIndex, int entryIndex, Rect rect) {
                 Log.i("DetailFragment", "clicked at "+setIndex+" "+entryIndex);
-                stockTip.setText(labels[entryIndex]+":"+ vals[entryIndex]);
+                stockTip.setText(labels[entryIndex]+" - "+ vals[entryIndex]);
             }
         });
         graphYearly.show();

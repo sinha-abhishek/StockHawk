@@ -30,6 +30,7 @@ import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.mvp.ModelCollectionManager;
 import com.sam_chordas.android.stockhawk.mvp.StocksModelCollection;
+import com.sam_chordas.android.stockhawk.rest.CustomRecyclerView;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
 import com.sam_chordas.android.stockhawk.rest.Utils;
@@ -60,9 +61,12 @@ public class MainFragment extends Fragment {
     private Intent mServiceIntent;
     private ItemTouchHelper mItemTouchHelper;
     private FragmentCallback fragmentCallback;
+    private int mActivePosition = 0;
+    private LinearLayoutManager layoutManager;
+
 
     public MainFragment() {
-
+        //recyclerView.getLayoutManager().
     }
 
     public interface FragmentCallback {
@@ -71,6 +75,7 @@ public class MainFragment extends Fragment {
         void restoreActionBar();
         void showNoContent();
         void onItemSelected(String symbol);
+        void onStocksLoaded(RecyclerView view, int position);
     }
 
     @Nullable
@@ -79,14 +84,15 @@ public class MainFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, view);
         fragmentCallback = (FragmentCallback)getActivity();
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        layoutManager = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(context,
                 new RecyclerViewItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
                         //TODO:
                         // do something on item click
-                        Intent i = new Intent(context,DetailActivity.class);
+                        Intent i = new Intent(context, DetailActivity.class);
                         String symbol = mCursorAdapter.getItemAtPosition(position);
                         //i.putExtra(SELECTED, symbol);
                         //startActivity(i);
@@ -124,8 +130,18 @@ public class MainFragment extends Fragment {
 
         mTitle = getActivity().getTitle();
         stocksModelCollection.BindView(this);
+//        if(savedInstanceState !=null) {
+//            mActivePosition = savedInstanceState.getInt("pos");
+//            layoutManager.onRestoreInstanceState(savedInstanceState.getParcelable("myState"));
+//            ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPosition(mActivePosition);
+//        }
         return view;
     }
+
+//    @Override
+//    public void onViewStateRestored(Bundle savedInstanceState) {
+//        super.onViewStateRestored(savedInstanceState);
+//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -156,6 +172,7 @@ public class MainFragment extends Fragment {
         mCursorAdapter.swapCursor(cursor);
         recyclerView.setVisibility(View.VISIBLE);
         emptyView.setVisibility(View.GONE);
+        ((FragmentCallback)getActivity()).onStocksLoaded(recyclerView, mActivePosition);
     }
 
     public void showError(String message) {
@@ -217,7 +234,11 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        ModelCollectionManager.getInstance().saveModels(stocksModelCollection,outState);
+        ModelCollectionManager.getInstance().saveModels(stocksModelCollection, outState);
+        outState.putParcelable("myState", layoutManager.onSaveInstanceState());
+//        mActivePosition = ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+//        outState.putInt("pos",mActivePosition);
+        //layoutManager.computeVerticalScrollOffset(recyclerView.);
         super.onSaveInstanceState(outState);
     }
 

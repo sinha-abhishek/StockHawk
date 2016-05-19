@@ -13,9 +13,9 @@
   <string name="no_content" translatable="true">Stock data not available.</string>
   <string name="err_network" translatable="true">Stock data not available. Failed to connect to internet</string>
   <string name="err_other" translatable="true">Stock data not available. Server error has occured</string>
-  <string name="weekly_string">1 week values</string>
-  <string name="monthly_string">1 month values</string>
-  <string name="yearly_string">1 year values</string>
+  <string name="weekly_string">week</string>
+  <string name="monthly_string">Month</string>
+  <string name="yearly_string">Year</string>
   <string name="symbol_name">Symbol: </string>
   <string name="click_msg">Click on map to show value</string>
 </resources>

@@ -66,6 +66,7 @@ public class MyStocksActivity extends AppCompatActivity  implements MainFragment
     spinner = (ProgressBar)findViewById(R.id.spinnerView);
     mTitle = getTitle();
     savedState = savedInstanceState;
+    hideSpinner();
     if (findViewById(R.id.fragment_detail) != null) {
       mHasTwoFragments = true;
       if (savedInstanceState == null) {
@@ -121,6 +122,15 @@ public class MyStocksActivity extends AppCompatActivity  implements MainFragment
             .replace(R.id.fragment_detail, fragment, DetailActivity.DETAILFRAGMENT_TAG)
             .commit();
     return;
+  }
+
+  @Override
+  public void onStocksLoaded(RecyclerView view, int position) {
+    if (mHasTwoFragments == true){
+      RecyclerView.ViewHolder holder = view.findViewHolderForLayoutPosition(position);
+      if (holder != null && holder.itemView!=null)
+        holder.itemView.performClick();
+    }
   }
 
 

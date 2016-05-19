@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk.service;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -137,6 +138,14 @@ public class StockTaskService extends GcmTaskService{
         result = GcmNetworkManager.RESULT_SUCCESS;
         try {
           ContentValues contentValues = new ContentValues();
+          ArrayList<ContentProviderOperation> operations = Utils.quoteJsonToContentVals(getResponse, errors);
+          if (operations == null || operations.size() == 0){
+            Intent i = new Intent(FETCH_STATUS);
+            i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+            Log.e(LOG_TAG, "Error applying batch insert");
+            return result;
+          }
           // update ISCURRENT to 0 (false) so new data is current
           if (isUpdate){
             contentValues.put(QuoteColumns.ISCURRENT, 0);
