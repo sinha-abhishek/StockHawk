@@ -46,9 +46,27 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
                 //show error here
                 if (View() != null) {
                     if(!Utils.isNetworkAvailable(_context)) {
-                        View().showError(_context.getString(R.string.err_network));
+                        if (getModels() != null && getModels().getCount() !=0)
+                            View().showErrorToast(_context.getString(R.string.err_network));
+                        else
+                            View().showError(_context.getString(R.string.err_network));
                     } else {
-                        View().showError(_context.getString(R.string.err_other));
+
+                        if (getModels() != null && getModels().getCount() !=0) {
+                            if (intent.hasExtra("errors")) {
+                                ArrayList<String> errors = intent.getStringArrayListExtra("errors");
+                                for (String error:
+                                        errors) {
+                                    if (View()!= null) {
+                                        View().showErrorToast(error);
+                                    }
+                                }
+                            } else {
+                                View().showErrorToast(_context.getString(R.string.err_other));
+                            }
+                        }
+                        else
+                            View().showError(_context.getString(R.string.err_other));
                     }
                 }
             } else {

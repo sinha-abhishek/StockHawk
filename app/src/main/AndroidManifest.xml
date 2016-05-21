@@ -51,6 +51,7 @@
             android:resource="@xml/widget_info" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.sam_chordas.android.stockhawk.serviceStockTaskService.FETCH_STATUS" />
             </intent-filter>
         </receiver>
         <service android:name=".widgets.DetailWidgetRemoteViewsService"

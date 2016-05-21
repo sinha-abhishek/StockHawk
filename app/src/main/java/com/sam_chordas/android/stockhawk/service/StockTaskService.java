@@ -142,6 +142,7 @@ public class StockTaskService extends GcmTaskService{
           if (operations == null || operations.size() == 0){
             Intent i = new Intent(FETCH_STATUS);
             i.putExtra("result", GcmNetworkManager.RESULT_FAILURE);
+            i.putStringArrayListExtra("errors", errors);
             LocalBroadcastManager.getInstance(this).sendBroadcast(i);
             Log.e(LOG_TAG, "Error applying batch insert");
             return result;
@@ -149,10 +150,13 @@ public class StockTaskService extends GcmTaskService{
           // update ISCURRENT to 0 (false) so new data is current
           if (isUpdate){
             contentValues.put(QuoteColumns.ISCURRENT, 0);
+            mContext.getContentResolver().delete(QuoteProvider.Quotes.CONTENT_URI, null, null);
             mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
                 null, null);
+          } else {
+
           }
-          mContext.getContentResolver().delete(QuoteProvider.Quotes.CONTENT_URI,null,null);
+
           mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
                   Utils.quoteJsonToContentVals(getResponse, errors));
 
