@@ -195,7 +195,7 @@ public class MainFragment extends Fragment {
 
     public void ShowSaved() {
         Toast toast =
-                Toast.makeText(context, "This stock is already saved!",
+                Toast.makeText(context, R.string.already_exists,
                         Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
         toast.show();
