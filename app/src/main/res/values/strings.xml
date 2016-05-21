@@ -18,4 +18,6 @@
   <string name="yearly_string">Year</string>
   <string name="symbol_name">Symbol: </string>
   <string name="click_msg">Click on map to show value</string>
+  <string name="empty_view_text">Cannot dispaly stocks at this time</string>
+  <string name="item_format_string">%1$d\u00B0 on %2$s</string>
 </resources>

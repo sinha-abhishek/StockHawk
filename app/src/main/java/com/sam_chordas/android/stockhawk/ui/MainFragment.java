@@ -146,14 +146,15 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         context = getActivity();
-        if (savedInstanceState == null) {
-            stocksModelCollection = new StocksModelCollection(getActivity(),getActivity().getLoaderManager());
-        } else {
-            stocksModelCollection =  ModelCollectionManager.getInstance().restoreModels(savedInstanceState);
-            if(stocksModelCollection == null) {
-                stocksModelCollection = new StocksModelCollection(getActivity(),getActivity().getLoaderManager());
-            }
-        }
+//        if (savedInstanceState == null) {
+//            stocksModelCollection = new StocksModelCollection(getActivity(),getActivity().getLoaderManager());
+//        } else {
+//            stocksModelCollection =  ModelCollectionManager.getInstance().restoreModels(savedInstanceState);
+//            if(stocksModelCollection == null) {
+//                stocksModelCollection = new StocksModelCollection(getActivity(),getActivity().getLoaderManager());
+//            }
+//        }
+        stocksModelCollection = new StocksModelCollection(getActivity(),getActivity().getLoaderManager());
         setHasOptionsMenu(true);
 
         super.onCreate(savedInstanceState);
@@ -172,7 +173,8 @@ public class MainFragment extends Fragment {
         mCursorAdapter.swapCursor(cursor);
         recyclerView.setVisibility(View.VISIBLE);
         emptyView.setVisibility(View.GONE);
-        ((FragmentCallback)getActivity()).onStocksLoaded(recyclerView, mActivePosition);
+        if ((FragmentCallback)getActivity() != null )
+            ((FragmentCallback)getActivity()).onStocksLoaded(recyclerView, mActivePosition);
     }
 
     public void showError(String message) {
@@ -246,6 +248,13 @@ public class MainFragment extends Fragment {
     public void onPause() {
 
         super.onPause();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stocksModelCollection.onDestroy();
     }
 
     public void ShowUpdating() {

@@ -73,9 +73,10 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
     public StocksModelCollection(Context context, LoaderManager loaderManager) {
         super(context, true, 86400*1000, StocksModelCollection.class.getSimpleName());
         this.loaderManager = loaderManager;
-        scheduleDownload();
+
         loaderManager.initLoader(CURSOR_LOADER_ID, null, this);
         LocalBroadcastManager.getInstance(_context).registerReceiver(myReciever, new IntentFilter(StockTaskService.FETCH_STATUS));
+        scheduleDownload();
     }
 
 
@@ -210,7 +211,12 @@ public class StocksModelCollection extends BaseModelCollection<Cursor, MainFragm
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         if (View() != null) {
-            View().UpdateAdapter(null);
+            //View().UpdateAdapter(null);
         }
+    }
+
+    public void onDestroy() {
+//        if (getModels() != null && !getModels().isClosed())
+//            getModels().close();
     }
 }
