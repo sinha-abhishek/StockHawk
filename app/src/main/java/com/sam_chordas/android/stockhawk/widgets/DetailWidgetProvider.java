@@ -16,6 +16,7 @@ import android.database.ContentObserver;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.RemoteCallbackList;
 import android.support.annotation.NonNull;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -29,28 +30,6 @@ import com.sam_chordas.android.stockhawk.ui.DetailActivity;
 import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
 
 
-class WeatherDataProviderObserver extends ContentObserver {
-    private AppWidgetManager mAppWidgetManager;
-    private ComponentName mComponentName;
-
-    WeatherDataProviderObserver(AppWidgetManager mgr, ComponentName cn, Handler h) {
-        super(h);
-        mAppWidgetManager = mgr;
-        mComponentName = cn;
-    }
-
-    @Override
-    public void onChange(boolean selfChange) {
-        // The data has changed, so notify the widget that the collection view needs to be updated.
-        // In response, the factory's onDataSetChanged() will be called which will requery the
-        // cursor for the new data.
-//        int[] appWidgetIds = mAppWidgetManager.getAppWidgetIds(
-//                new ComponentName(context, getClass()));
-//        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list);
-        mAppWidgetManager.notifyAppWidgetViewDataChanged(
-                mAppWidgetManager.getAppWidgetIds(mComponentName), R.id.weather_list);
-    }
-}
 
 
 /**
@@ -61,6 +40,31 @@ public class DetailWidgetProvider extends AppWidgetProvider {
     private static WeatherDataProviderObserver sDataObserver;
     private static Handler sWorkerQueue;
     private static HandlerThread sWorkerThread;
+    RemoteViews remoteViews;
+
+    class WeatherDataProviderObserver extends ContentObserver {
+        private AppWidgetManager mAppWidgetManager;
+        private ComponentName mComponentName;
+
+        WeatherDataProviderObserver(AppWidgetManager mgr, ComponentName cn, Handler h) {
+            super(h);
+            mAppWidgetManager = mgr;
+            mComponentName = cn;
+        }
+
+
+
+        @Override
+        public void onChange(boolean selfChange) {
+            // The data has changed, so notify the widget that the collection view needs to be updated.
+            // In response, the factory's onDataSetChanged() will be called which will requery the
+            // cursor for the new data.
+            //int[] appWidgetIds = mAppWidgetManager.getAppWidgetIds(mComponentName);
+            mAppWidgetManager.notifyAppWidgetViewDataChanged(
+                    mAppWidgetManager.getAppWidgetIds(mComponentName), R.id.weather_list);
+        }
+    }
+
     public DetailWidgetProvider() {
         //LocalBroadcastManager.getInstance().registerReceiver(myReciever, new IntentFilter(StockTaskService.FETCH_STATUS));
 
@@ -86,7 +90,15 @@ public class DetailWidgetProvider extends AppWidgetProvider {
         public void onReceive(Context context, Intent intent) {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
-                    new ComponentName(context, getClass()));
+                    new ComponentName(context, DetailWidgetProvider.class));
+            for (int i=0; i< appWidgetIds.length ; i++) {
+
+                int appWidgetId = appWidgetIds[i];
+                // Tell the AppWidgetManager to perform an update on the current app widget
+                RemoteViews views = updateRemoteView(context,appWidgetId, appWidgetManager);
+                appWidgetManager.updateAppWidget(appWidgetId, views);
+
+            }
 //            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
 //            // Create an Intent to launch MainActivity
 //            Intent intent1 = new Intent(context, MyStocksActivity.class);
@@ -112,30 +124,26 @@ public class DetailWidgetProvider extends AppWidgetProvider {
         }
     };
 
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        LocalBroadcastManager.getInstance(context).registerReceiver(receiver, new IntentFilter(StockTaskService.FETCH_STATUS));
+    private RemoteViews updateRemoteView(Context context, int appWidgetId, AppWidgetManager appWidgetManager) {
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
 
-        // Perform this loop procedure for each App Widget that belongs to this provider
-        for (int appWidgetId : appWidgetIds) {
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
+        // Create an Intent to launch MainActivity
+        Intent intent = new Intent(context, MyStocksActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
-            // Create an Intent to launch MainActivity
-            Intent intent = new Intent(context, MyStocksActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-            views.setOnClickPendingIntent(R.id.widget, pendingIntent);
-
-            // Set up the collection
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                setRemoteAdapter(context, views);
-            } else {
-                setRemoteAdapterV11(context, views);
-            }
-            boolean useDetailActivity = false;
-            Intent clickIntentTemplate = new Intent(context, MyStocksActivity.class);
-            PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
-                    .addNextIntentWithParentStack(clickIntentTemplate)
-                    .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-            views.setPendingIntentTemplate(R.id.weather_list, clickPendingIntentTemplate);
+        // Set up the collection
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            setRemoteAdapter(context, views);
+        } else {
+            setRemoteAdapterV11(context, views);
+        }
+        boolean useDetailActivity = false;
+        Intent clickIntentTemplate = new Intent(context, MyStocksActivity.class);
+        PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
+                .addNextIntentWithParentStack(clickIntentTemplate)
+                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setPendingIntentTemplate(R.id.weather_list, clickPendingIntentTemplate);
 //            Intent clickIntentTemplate = useDetailActivity
 //                    ? new Intent(context, DetailActivity.class)
 //                    : new Intent(context, MyStocksActivity.class);
@@ -143,12 +151,24 @@ public class DetailWidgetProvider extends AppWidgetProvider {
 //                    .addNextIntentWithParentStack(clickIntentTemplate)
 //                    .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 //            views.setPendingIntentTemplate(R.id.weather_list, clickPendingIntentTemplate);
-            views.setEmptyView(R.id.weather_list, R.id.empty_view);
+        views.setEmptyView(R.id.weather_list, R.id.empty_view);
+        remoteViews = views;
+        return views;
+    }
+
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        LocalBroadcastManager.getInstance(context).registerReceiver(receiver, new IntentFilter(StockTaskService.FETCH_STATUS));
+
+        // Perform this loop procedure for each App Widget that belongs to this provider
+        for (int appWidgetId : appWidgetIds) {
+
 
             // Tell the AppWidgetManager to perform an update on the current app widget
+            RemoteViews views = updateRemoteView(context,appWidgetId, appWidgetManager);
             appWidgetManager.updateAppWidget(appWidgetId, views);
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.weather_list);
+
         }
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.weather_list);
     }
 
     @Override
@@ -157,33 +177,13 @@ public class DetailWidgetProvider extends AppWidgetProvider {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
                 new ComponentName(context, getClass()));
-//        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
-//        // Create an Intent to launch MainActivity
-//        Intent intent1 = new Intent(context, MyStocksActivity.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent1, 0);
-//        views.setOnClickPendingIntent(R.id.widget, pendingIntent);
-//
-//        // Set up the collection
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-//            setRemoteAdapter(context, views);
-//        } else {
-//            setRemoteAdapterV11(context, views);
-//        }
-//        boolean useDetailActivity = false;
-//        Intent clickIntentTemplate = new Intent(context, MyStocksActivity.class);
-//        PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
-//                .addNextIntentWithParentStack(clickIntentTemplate)
-//                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-//        views.setPendingIntentTemplate(R.id.weather_list, clickPendingIntentTemplate);
-//        views.setEmptyView(R.id.weather_list, R.id.empty_view);
-//        appWidgetManager.updateAppWidget(appWidgetIds, views);
+        for (int appWidgetId : appWidgetIds) {
+            // Tell the AppWidgetManager to perform an update on the current app widget
+            RemoteViews views = updateRemoteView(context,appWidgetId, appWidgetManager);
+            appWidgetManager.updateAppWidget(appWidgetId, views);
+
+        }
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.weather_list);
-//        if (GcmTas.equals(intent.getAction())) {
-//            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-//            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
-//                    new ComponentName(context, getClass()));
-//            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list);
-//        }
         super.onReceive(context, intent);
     }
 

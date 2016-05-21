@@ -176,7 +176,7 @@ public class StockTaskService extends GcmTaskService{
     Intent i = new Intent(FETCH_STATUS);
     i.putExtra("result", result);
     i.putStringArrayListExtra("errors", errors);
-    LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+    LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(i);
     return result;
   }
 
